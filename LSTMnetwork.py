@@ -12,7 +12,7 @@ tf.random.set_seed(0)
 print("we out")
 
 # download the data
-df = yf.download(tickers=['TSLA'], period='3m')
+df:pd.DataFrame = yf.download(tickers=['TSLA'], period='1y')
 y = df['Close'].fillna(method='ffill')
 y = y.values.reshape(-1, 1)
 
@@ -23,7 +23,7 @@ y = scaler.transform(y)
 
 # generate the input and output sequences
 n_lookback = 60  # length of input sequences (lookback period)
-n_forecast = 30  # length of output sequences (forecast period)
+n_forecast = 90  # length of output sequences (forecast period)
 
 X = []
 Y = []
@@ -63,10 +63,19 @@ df_future['Date'] = pd.date_range(start=df_past['Date'].iloc[-1] + pd.Timedelta(
 df_future['Forecast'] = Y_.flatten()
 df_future['Actual'] = np.nan
 
-results = df_past.append(df_future).set_index('Date')
+results:pd.DataFrame = df_past.append(df_future).set_index('Date')
 
 # plot the results
 results.plot(title='AAPL')
 plt.show()
 print("we done")
 print(results.columns)
+print("done")
+results = results[results["Forecast"].notna()]
+results["Open"] = results["Forecast"]
+results["High"] = results["Forecast"]
+results["Low"] = results["Forecast"]
+results["Close"] = results["Forecast"]
+final = pd.concat([df, results], sort=False, join="inner")
+print(final)
+
